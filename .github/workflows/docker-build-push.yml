@@ -37,16 +37,16 @@ jobs:
     
     - name: Image push summary
       run: |
-        echo "✅ Docker Image Built and Pushed Successfully!"
+        echo "Docker Image Built and Pushed Successfully!"
         echo ""
-        echo "📦 Image Details:"
+        echo "Image Details:"
         echo "  Repository: ${{ secrets.DOCKER_USERNAME }}/heart-disease-api"
         echo "  Tags:"
         echo "    - latest"
         echo "    - ${{ github.sha }}"
         echo ""
-        echo "🐳 Pull Command:"
+        echo "Pull Command:"
         echo "  docker pull ${{ secrets.DOCKER_USERNAME }}/heart-disease-api:latest"
         echo ""
-        echo "🔗 Docker Hub Link:"
+        echo "Docker Hub Link:"
         echo "  https://hub.docker.com/r/${{ secrets.DOCKER_USERNAME }}/heart-disease-api"
