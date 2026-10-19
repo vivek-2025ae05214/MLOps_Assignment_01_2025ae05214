@@ -172,7 +172,7 @@ jobs:
         from sklearn.ensemble import RandomForestClassifier
         from sklearn.metrics import (
             accuracy_score, precision_score, recall_score, f1_score,
-            confusion_matrix, classification_report
+            confusion_matrix, classification_report, roc_auc_score
         )
         
         # Create output directories
@@ -236,13 +236,15 @@ jobs:
             'precision': float(precision_score(y_test, y_pred_lr, zero_division=0)),
             'recall': float(recall_score(y_test, y_pred_lr, zero_division=0)),
             'f1': float(f1_score(y_test, y_pred_lr, zero_division=0)),
+            'roc_auc': float(roc_auc_score(y_test, y_proba_lr[:, 1])),
         }
         
         log_message("Logistic Regression Results:")
         log_message(f"  Accuracy:  {lr_metrics['accuracy']:.4f}")
         log_message(f"  Precision: {lr_metrics['precision']:.4f}")
         log_message(f"  Recall:    {lr_metrics['recall']:.4f}")
-        log_message(f"  F1 Score:  {lr_metrics['f1']:.4f}\n")
+        log_message(f"  F1 Score:  {lr_metrics['f1']:.4f}")
+        log_message(f"  ROC-AUC:   {lr_metrics['roc_auc']:.4f}\\n")
         
         joblib.dump(lr_model, 'artifacts/logistic_regression_model.pkl')
         log_message("Model saved: artifacts/logistic_regression_model.pkl\n")
@@ -266,13 +268,15 @@ jobs:
             'precision': float(precision_score(y_test, y_pred_rf, zero_division=0)),
             'recall': float(recall_score(y_test, y_pred_rf, zero_division=0)),
             'f1': float(f1_score(y_test, y_pred_rf, zero_division=0)),
+            'roc_auc': float(roc_auc_score(y_test, y_proba_rf[:, 1])),
         }
         
         log_message("Random Forest Results:")
         log_message(f"  Accuracy:  {rf_metrics['accuracy']:.4f}")
         log_message(f"  Precision: {rf_metrics['precision']:.4f}")
         log_message(f"  Recall:    {rf_metrics['recall']:.4f}")
-        log_message(f"  F1 Score:  {rf_metrics['f1']:.4f}\n")
+        log_message(f"  F1 Score:  {rf_metrics['f1']:.4f}")
+        log_message(f"  ROC-AUC:   {rf_metrics['roc_auc']:.4f}\\n")
         
         # Feature importance
         feature_importance = pd.DataFrame({

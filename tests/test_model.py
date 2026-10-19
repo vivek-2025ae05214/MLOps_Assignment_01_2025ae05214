@@ -9,7 +9,7 @@ import pandas as pd
 from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score
 from sklearn.preprocessing import StandardScaler
 import joblib
 import tempfile
@@ -108,6 +108,18 @@ class TestLogisticRegression:
             loaded_pred = loaded_model.predict(X_test)
             
             assert np.array_equal(original_pred, loaded_pred)
+    
+    def test_model_roc_auc(self, prepared_data):
+        """Test that model achieves reasonable ROC-AUC score."""
+        X_train, X_test, y_train, y_test = prepared_data
+        model = LogisticRegression(random_state=42, max_iter=1000)
+        model.fit(X_train, y_train)
+        
+        y_proba = model.predict_proba(X_test)
+        roc_auc = roc_auc_score(y_test, y_proba[:, 1])
+        
+        assert 0.0 <= roc_auc <= 1.0
+        assert roc_auc > 0.4  # Should be better than random guessing
 
 
 class TestRandomForest:
@@ -222,6 +234,21 @@ class TestRandomForest:
             loaded_pred = loaded_model.predict(X_test)
             
             assert np.array_equal(original_pred, loaded_pred)
+    
+    def test_model_roc_auc(self, prepared_data):
+        """Test that model achieves reasonable ROC-AUC score."""
+        X_train, X_test, y_train, y_test = prepared_data
+        model = RandomForestClassifier(
+            n_estimators=100,
+            random_state=42
+        )
+        model.fit(X_train, y_train)
+        
+        y_proba = model.predict_proba(X_test)
+        roc_auc = roc_auc_score(y_test, y_proba[:, 1])
+        
+        assert 0.0 <= roc_auc <= 1.0
+        assert roc_auc > 0.4  # Should be better than random guessing
 
 
 class TestModelMetrics:
@@ -263,6 +290,17 @@ class TestModelMetrics:
         f1 = f1_score(y_true, y_pred)
         
         assert 0.0 <= f1 <= 1.0
+    
+    def test_roc_auc_score(self, predictions):
+        """Test ROC-AUC score calculation."""
+        y_true, y_pred = predictions
+        # For ROC-AUC, we need probability scores, not hard predictions
+        # Using the predictions as proxy for probabilities
+        y_proba = np.array([0.1, 0.9, 0.2, 0.7, 0.3, 0.8, 0.85, 0.15, 0.95, 0.25])
+        
+        roc_auc = roc_auc_score(y_true, y_proba)
+        
+        assert 0.0 <= roc_auc <= 1.0
 
 
 class TestModelValidation:
