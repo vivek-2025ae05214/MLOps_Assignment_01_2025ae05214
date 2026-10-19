@@ -1,0 +1,52 @@
+name: Docker Build and Push
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build-and-push:
+    name: Build and Push Docker Image
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+    
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
+    
+    - name: Login to Docker Hub
+      uses: docker/login-action@v2
+      with:
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+    
+    - name: Build and push Docker image
+      uses: docker/build-push-action@v4
+      with:
+        context: .
+        file: ./deploy/Dockerfile
+        push: true
+        tags: |
+          ${{ secrets.DOCKER_USERNAME }}/heart-disease-api:latest
+          ${{ secrets.DOCKER_USERNAME }}/heart-disease-api:${{ github.sha }}
+        cache-from: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/heart-disease-api:buildcache
+        cache-to: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/heart-disease-api:buildcache,mode=max
+    
+    - name: Image push summary
+      run: |
+        echo "✅ Docker Image Built and Pushed Successfully!"
+        echo ""
+        echo "📦 Image Details:"
+        echo "  Repository: ${{ secrets.DOCKER_USERNAME }}/heart-disease-api"
+        echo "  Tags:"
+        echo "    - latest"
+        echo "    - ${{ github.sha }}"
+        echo ""
+        echo "🐳 Pull Command:"
+        echo "  docker pull ${{ secrets.DOCKER_USERNAME }}/heart-disease-api:latest"
+        echo ""
+        echo "🔗 Docker Hub Link:"
+        echo "  https://hub.docker.com/r/${{ secrets.DOCKER_USERNAME }}/heart-disease-api"
