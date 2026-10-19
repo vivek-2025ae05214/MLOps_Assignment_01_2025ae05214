@@ -1,0 +1,37 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: heart-disease-api
+  namespace: heart-disease-api
+  labels:
+    app: heart-disease-api
+  annotations:
+    # Use appropriate ingress controller (nginx, GCP, AWS, Azure)
+    # nginx.ingress.kubernetes.io/rewrite-target: /
+    # For GCP Cloud Ingress
+    # kubernetes.io/ingress.class: "gce"
+    # For AWS ALB
+    # kubernetes.io/ingress.class: "alb"
+    # For Azure
+    # kubernetes.io/ingress.class: "azure/application-gateway"
+    description: "Heart Disease API Ingress"
+spec:
+  ingressClassName: nginx  # Change based on your cluster (nginx, gce, alb, azure, etc.)
+  
+  rules:
+  - host: heart-disease-api.local  # Change to your domain
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: heart-disease-api
+            port:
+              number: 80
+  
+  # Optional: Add TLS
+  # tls:
+  # - hosts:
+  #   - heart-disease-api.local
+  #   secretName: heart-disease-api-tls

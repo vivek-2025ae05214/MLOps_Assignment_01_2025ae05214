@@ -1,0 +1,66 @@
+# ============================================================================
+# Docker Compose Configuration for Heart Disease Classification API
+# ============================================================================
+# Build and run: docker-compose up --build
+# Shut down: docker-compose down
+# ============================================================================
+
+version: '3.8'
+
+services:
+  # Heart Disease Prediction API Service
+  api:
+    build:
+      context: .
+      dockerfile: deploy/Dockerfile
+    
+    container_name: heart-disease-api
+    
+    ports:
+      - "8000:8000"
+    
+    volumes:
+      - ./artifacts:/app/artifacts:ro
+      - ./src:/app/src
+    
+    environment:
+      - PYTHONUNBUFFERED=1
+      - PYTHONDONTWRITEBYTECODE=1
+    
+    # Restart policy
+    restart: unless-stopped
+    
+    # Health check
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    
+    # Logging
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    
+    # Resource limits (optional)
+    # deploy:
+    #   resources:
+    #     limits:
+    #       cpus: '1'
+    #       memory: 1G
+    #     reservations:
+    #       cpus: '0.5'
+    #       memory: 512M
+
+# Network configuration
+networks:
+  default:
+    name: heart-disease-network
+
+# Volumes
+volumes:
+  artifacts:
+    driver: local

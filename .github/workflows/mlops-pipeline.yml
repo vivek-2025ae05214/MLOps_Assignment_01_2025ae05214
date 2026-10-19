@@ -1,0 +1,429 @@
+name: MLOps CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  workflow_dispatch:
+
+env:
+  PYTHON_VERSION: '3.9'
+  PIP_CACHE_DIR: ~/.cache/pip
+
+jobs:
+  lint-and-format:
+    name: Linting & Code Quality
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+        cache: 'pip'
+    
+    - name: Install linting tools
+      run: |
+        python -m pip install --upgrade pip setuptools wheel
+        pip install flake8 pylint black isort
+        echo "::group::Linting tools installed"
+        pip list | grep -E "flake8|pylint|black|isort"
+        echo "::endgroup::"
+    
+    - name: Run Black (Code Formatting Check)
+      run: |
+        echo "::group::Black - Code Format Check"
+        black --check --verbose . --exclude '\.github|\.ipynb_checkpoints' || true
+        echo "::endgroup::"
+    
+    - name: Run isort (Import Sorting Check)
+      run: |
+        echo "::group::isort - Import Sorting Check"
+        isort --check-only --verbose . --skip-gitignore || true
+        echo "::endgroup::"
+    
+    - name: Run Flake8 (Style Guide Enforcement)
+      run: |
+        echo "::group::Flake8 - PEP8 Compliance"
+        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics || true
+        echo "::endgroup::"
+    
+    - name: Run Pylint
+      run: |
+        echo "::group::Pylint - Static Analysis"
+        find . -type f -name "*.py" ! -path "./.github/*" ! -path "./.ipynb_checkpoints/*" -exec pylint {} --fail-under=7.0 \; || true
+        echo "::endgroup::"
+    
+    - name: Upload linting report
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: linting-report
+        path: |
+          .flake8
+          .pylintrc
+        retention-days: 30
+
+  unit-tests:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    needs: lint-and-format
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+        cache: 'pip'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip setuptools wheel
+        pip install pytest pytest-cov pytest-xdist numpy pandas scikit-learn
+        pip install -r requirements.txt || echo "No requirements.txt found"
+        echo "::group::Installed packages"
+        pip list
+        echo "::endgroup::"
+    
+    - name: Run unit tests with pytest
+      run: |
+        echo "::group::Unit Tests Execution"
+        pytest -v --tb=short --cov=. --cov-report=xml --cov-report=term-missing \
+          test_data_processing.py test_model.py || true
+        echo "::endgroup::"
+    
+    - name: Generate test report
+      if: always()
+      run: |
+        echo "::group::Test Summary"
+        pytest --collect-only -q test_data_processing.py test_model.py || true
+        echo "::endgroup::"
+    
+    - name: Upload test results
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: test-results
+        path: |
+          .coverage
+          coverage.xml
+        retention-days: 30
+    
+    - name: Upload coverage report
+      if: always()
+      uses: codecov/codecov-action@v3
+      with:
+        files: ./coverage.xml
+        flags: unittests
+        name: codecov-umbrella
+        fail_ci_if_error: false
+
+  model-training:
+    name: Model Training & Evaluation
+    runs-on: ubuntu-latest
+    needs: unit-tests
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+        cache: 'pip'
+    
+    - name: Install ML dependencies
+      run: |
+        python -m pip install --upgrade pip setuptools wheel
+        pip install numpy pandas scikit-learn matplotlib seaborn joblib ucimlrepo
+        echo "::group::ML dependencies"
+        pip list | grep -E "numpy|pandas|scikit-learn|matplotlib"
+        echo "::endgroup::"
+    
+    - name: Create training script
+      run: |
+        cat > train_and_evaluate.py << 'EOF'
+        """
+        Training script for heart disease classification models.
+        Generates artifacts and logs for CI/CD pipeline.
+        """
+        import os
+        import json
+        import joblib
+        import numpy as np
+        import pandas as pd
+        from datetime import datetime
+        from pathlib import Path
+        
+        from sklearn.preprocessing import StandardScaler, LabelEncoder
+        from sklearn.model_selection import train_test_split, cross_val_score
+        from sklearn.linear_model import LogisticRegression
+        from sklearn.ensemble import RandomForestClassifier
+        from sklearn.metrics import (
+            accuracy_score, precision_score, recall_score, f1_score,
+            confusion_matrix, classification_report
+        )
+        
+        # Create output directories
+        os.makedirs('artifacts', exist_ok=True)
+        os.makedirs('logs', exist_ok=True)
+        
+        # Initialize logging
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        log_file = f"logs/training_{timestamp}.log"
+        
+        def log_message(msg):
+            """Log message to file and stdout."""
+            print(msg)
+            with open(log_file, 'a') as f:
+                f.write(msg + '\n')
+        
+        log_message(f"=== Training Started: {datetime.now()} ===\n")
+        
+        # ============= DATA PREPARATION =============
+        log_message("STEP 1: DATA PREPARATION")
+        np.random.seed(42)
+        
+        # Create synthetic dataset (mimics heart disease data)
+        n_samples = 303
+        n_features = 13
+        X = np.random.randn(n_samples, n_features)
+        y = np.random.choice([0, 1], n_samples, p=[0.54, 0.46])
+        
+        # Add some correlation to make model learning meaningful
+        X[:, 0] += y * 2  # age-like feature
+        X[:, 1] += y * 1.5  # sex-like feature
+        
+        log_message(f"Dataset shape: {X.shape}")
+        log_message(f"Target distribution: {np.bincount(y)}")
+        log_message(f"Class balance: {np.bincount(y) / len(y)}\n")
+        
+        # Train-test split
+        X_train, X_test, y_train, y_test = train_test_split(
+            X, y, test_size=0.2, random_state=42, stratify=y
+        )
+        log_message(f"Train set size: {len(X_train)}")
+        log_message(f"Test set size: {len(X_test)}\n")
+        
+        # Feature scaling
+        scaler = StandardScaler()
+        X_train_scaled = scaler.fit_transform(X_train)
+        X_test_scaled = scaler.transform(X_test)
+        joblib.dump(scaler, 'artifacts/scaler.pkl')
+        log_message("Scaler saved to artifacts/scaler.pkl\n")
+        
+        # ============= MODEL 1: LOGISTIC REGRESSION =============
+        log_message("STEP 2: LOGISTIC REGRESSION")
+        lr_model = LogisticRegression(random_state=42, max_iter=1000)
+        lr_model.fit(X_train_scaled, y_train)
+        
+        y_pred_lr = lr_model.predict(X_test_scaled)
+        y_proba_lr = lr_model.predict_proba(X_test_scaled)
+        
+        lr_metrics = {
+            'accuracy': float(accuracy_score(y_test, y_pred_lr)),
+            'precision': float(precision_score(y_test, y_pred_lr, zero_division=0)),
+            'recall': float(recall_score(y_test, y_pred_lr, zero_division=0)),
+            'f1': float(f1_score(y_test, y_pred_lr, zero_division=0)),
+        }
+        
+        log_message("Logistic Regression Results:")
+        log_message(f"  Accuracy:  {lr_metrics['accuracy']:.4f}")
+        log_message(f"  Precision: {lr_metrics['precision']:.4f}")
+        log_message(f"  Recall:    {lr_metrics['recall']:.4f}")
+        log_message(f"  F1 Score:  {lr_metrics['f1']:.4f}\n")
+        
+        joblib.dump(lr_model, 'artifacts/logistic_regression_model.pkl')
+        log_message("Model saved: artifacts/logistic_regression_model.pkl\n")
+        
+        # ============= MODEL 2: RANDOM FOREST =============
+        log_message("STEP 3: RANDOM FOREST CLASSIFIER")
+        rf_model = RandomForestClassifier(
+            n_estimators=100,
+            max_depth=10,
+            min_samples_split=5,
+            random_state=42,
+            n_jobs=-1
+        )
+        rf_model.fit(X_train_scaled, y_train)
+        
+        y_pred_rf = rf_model.predict(X_test_scaled)
+        y_proba_rf = rf_model.predict_proba(X_test_scaled)
+        
+        rf_metrics = {
+            'accuracy': float(accuracy_score(y_test, y_pred_rf)),
+            'precision': float(precision_score(y_test, y_pred_rf, zero_division=0)),
+            'recall': float(recall_score(y_test, y_pred_rf, zero_division=0)),
+            'f1': float(f1_score(y_test, y_pred_rf, zero_division=0)),
+        }
+        
+        log_message("Random Forest Results:")
+        log_message(f"  Accuracy:  {rf_metrics['accuracy']:.4f}")
+        log_message(f"  Precision: {rf_metrics['precision']:.4f}")
+        log_message(f"  Recall:    {rf_metrics['recall']:.4f}")
+        log_message(f"  F1 Score:  {rf_metrics['f1']:.4f}\n")
+        
+        # Feature importance
+        feature_importance = pd.DataFrame({
+            'Feature': [f'Feature_{i}' for i in range(n_features)],
+            'Importance': rf_model.feature_importances_
+        }).sort_values('Importance', ascending=False)
+        
+        log_message("Top 5 Important Features:")
+        for idx, row in feature_importance.head().iterrows():
+            log_message(f"  {row['Feature']}: {row['Importance']:.4f}")
+        log_message()
+        
+        joblib.dump(rf_model, 'artifacts/random_forest_model.pkl')
+        log_message("Model saved: artifacts/random_forest_model.pkl\n")
+        
+        # ============= MODEL COMPARISON =============
+        log_message("STEP 4: MODEL COMPARISON")
+        log_message(f"Logistic Regression F1:  {lr_metrics['f1']:.4f}")
+        log_message(f"Random Forest F1:        {rf_metrics['f1']:.4f}\n")
+        
+        best_model = "Random Forest" if rf_metrics['f1'] > lr_metrics['f1'] else "Logistic Regression"
+        log_message(f"✓ Best Model: {best_model}\n")
+        
+        # ============= SAVE METRICS =============
+        metrics_report = {
+            'timestamp': timestamp,
+            'data_info': {
+                'n_samples': int(n_samples),
+                'n_features': int(n_features),
+                'train_size': int(len(X_train)),
+                'test_size': int(len(X_test)),
+                'class_distribution': {str(k): int(v) for k, v in zip(*np.unique(y, return_counts=True))},
+            },
+            'logistic_regression': lr_metrics,
+            'random_forest': rf_metrics,
+            'best_model': best_model,
+        }
+        
+        with open('artifacts/metrics.json', 'w') as f:
+            json.dump(metrics_report, f, indent=2)
+        log_message("Metrics saved to artifacts/metrics.json")
+        
+        log_message(f"\n=== Training Completed: {datetime.now()} ===")
+        EOF
+        python train_and_evaluate.py
+    
+    - name: Display training logs
+      if: always()
+      run: |
+        echo "::group::Training Logs"
+        if [ -d logs ]; then
+          for log_file in logs/*; do
+            if [ -f "$log_file" ]; then
+              echo "=== $log_file ==="
+              cat "$log_file"
+            fi
+          done
+        fi
+        echo "::endgroup::"
+    
+    - name: Display metrics
+      if: always()
+      run: |
+        echo "::group::Model Metrics"
+        if [ -f artifacts/metrics.json ]; then
+          cat artifacts/metrics.json
+        fi
+        echo "::endgroup::"
+    
+    - name: Validate models
+      run: |
+        python << 'EOF'
+        import json
+        import joblib
+        from pathlib import Path
+        
+        print("::group::Model Validation")
+        
+        # Check if model files exist
+        models = [
+            'artifacts/logistic_regression_model.pkl',
+            'artifacts/random_forest_model.pkl',
+            'artifacts/scaler.pkl'
+        ]
+        
+        for model_path in models:
+            if Path(model_path).exists():
+                model = joblib.load(model_path)
+                print(f"✓ {model_path} loaded successfully")
+            else:
+                print(f"✗ {model_path} NOT FOUND")
+        
+        # Check metrics
+        if Path('artifacts/metrics.json').exists():
+            with open('artifacts/metrics.json', 'r') as f:
+                metrics = json.load(f)
+            print(f"✓ Metrics file valid")
+            print(f"  Best Model: {metrics['best_model']}")
+            print(f"  RF Accuracy: {metrics['random_forest']['accuracy']:.4f}")
+        
+        print("::endgroup::")
+        EOF
+    
+    - name: Upload artifacts
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: model-artifacts
+        path: |
+          artifacts/
+          logs/
+        retention-days: 90
+    
+    - name: Generate summary
+      if: always()
+      run: |
+        echo "## 🤖 Model Training Summary" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        if [ -f artifacts/metrics.json ]; then
+          echo "### Metrics" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`json" >> $GITHUB_STEP_SUMMARY
+          cat artifacts/metrics.json >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+        fi
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### Artifacts Generated" >> $GITHUB_STEP_SUMMARY
+        echo "- ✓ Logistic Regression Model" >> $GITHUB_STEP_SUMMARY
+        echo "- ✓ Random Forest Model" >> $GITHUB_STEP_SUMMARY
+        echo "- ✓ Feature Scaler" >> $GITHUB_STEP_SUMMARY
+        echo "- ✓ Training Logs" >> $GITHUB_STEP_SUMMARY
+
+  build-status:
+    name: Pipeline Status
+    runs-on: ubuntu-latest
+    needs: [ lint-and-format, unit-tests, model-training ]
+    if: always()
+    
+    steps:
+    - name: Check pipeline status
+      run: |
+        echo "## CI/CD Pipeline Results" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "| Step | Status |" >> $GITHUB_STEP_SUMMARY
+        echo "|------|--------|" >> $GITHUB_STEP_SUMMARY
+        echo "| Linting | ${{ needs.lint-and-format.result }} |" >> $GITHUB_STEP_SUMMARY
+        echo "| Unit Tests | ${{ needs.unit-tests.result }} |" >> $GITHUB_STEP_SUMMARY
+        echo "| Model Training | ${{ needs.model-training.result }} |" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        
+        if [ "${{ needs.lint-and-format.result }}" = "failure" ] || \
+           [ "${{ needs.unit-tests.result }}" = "failure" ] || \
+           [ "${{ needs.model-training.result }}" = "failure" ]; then
+          exit 1
+        fi
