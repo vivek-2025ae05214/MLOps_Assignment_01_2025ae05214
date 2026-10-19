@@ -404,10 +404,78 @@ jobs:
         echo "- ✓ Feature Scaler" >> $GITHUB_STEP_SUMMARY
         echo "- ✓ Training Logs" >> $GITHUB_STEP_SUMMARY
 
+  docker-build-and-push:
+    name: Build and Push Docker Image
+    runs-on: ubuntu-latest
+    needs: [ lint-and-format, unit-tests, model-training ]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && success()
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+    
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
+    
+    - name: Login to Docker Hub
+      uses: docker/login-action@v2
+      with:
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+    
+    - name: Extract Docker metadata
+      id: docker-meta
+      run: |
+        IMAGE_NAME="heart-disease-api"
+        DOCKER_IMAGE="${{ secrets.DOCKER_USERNAME }}/${IMAGE_NAME}"
+        SHA_SHORT=${GITHUB_SHA::7}
+        
+        echo "image_name=${IMAGE_NAME}" >> $GITHUB_OUTPUT
+        echo "docker_image=${DOCKER_IMAGE}" >> $GITHUB_OUTPUT
+        echo "sha_short=${SHA_SHORT}" >> $GITHUB_OUTPUT
+        echo "timestamp=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" >> $GITHUB_OUTPUT
+    
+    - name: Build and push Docker image
+      uses: docker/build-push-action@v4
+      with:
+        context: .
+        file: ./deploy/Dockerfile
+        push: true
+        tags: |
+          ${{ steps.docker-meta.outputs.docker_image }}:latest
+          ${{ steps.docker-meta.outputs.docker_image }}:${{ steps.docker-meta.outputs.sha_short }}
+          ${{ steps.docker-meta.outputs.docker_image }}:${{ github.run_id }}
+        cache-from: type=registry,ref=${{ steps.docker-meta.outputs.docker_image }}:buildcache
+        cache-to: type=registry,ref=${{ steps.docker-meta.outputs.docker_image }}:buildcache,mode=max
+        build-args: |
+          BUILD_DATE=${{ steps.docker-meta.outputs.timestamp }}
+          VCS_REF=${{ github.sha }}
+          VERSION=${{ steps.docker-meta.outputs.sha_short }}
+    
+    - name: Display Docker build summary
+      run: |
+        echo "## Docker Image Build Summary" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### Image Details" >> $GITHUB_STEP_SUMMARY
+        echo "- Repository: ${{ steps.docker-meta.outputs.docker_image }}" >> $GITHUB_STEP_SUMMARY
+        echo "- Tags:" >> $GITHUB_STEP_SUMMARY
+        echo "  - \`latest\`" >> $GITHUB_STEP_SUMMARY
+        echo "  - \`${{ steps.docker-meta.outputs.sha_short }}\`" >> $GITHUB_STEP_SUMMARY
+        echo "  - \`${{ github.run_id }}\`" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### Pull Commands" >> $GITHUB_STEP_SUMMARY
+        echo "\`\`\`bash" >> $GITHUB_STEP_SUMMARY
+        echo "docker pull ${{ steps.docker-meta.outputs.docker_image }}:latest" >> $GITHUB_STEP_SUMMARY
+        echo "docker pull ${{ steps.docker-meta.outputs.docker_image }}:${{ steps.docker-meta.outputs.sha_short }}" >> $GITHUB_STEP_SUMMARY
+        echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### Docker Hub Link" >> $GITHUB_STEP_SUMMARY
+        echo "https://hub.docker.com/r/${{ secrets.DOCKER_USERNAME }}/heart-disease-api" >> $GITHUB_STEP_SUMMARY
+
   build-status:
     name: Pipeline Status
     runs-on: ubuntu-latest
-    needs: [ lint-and-format, unit-tests, model-training ]
+    needs: [ lint-and-format, unit-tests, model-training, docker-build-and-push ]
     if: always()
     
     steps:
@@ -420,6 +488,7 @@ jobs:
         echo "| Linting | ${{ needs.lint-and-format.result }} |" >> $GITHUB_STEP_SUMMARY
         echo "| Unit Tests | ${{ needs.unit-tests.result }} |" >> $GITHUB_STEP_SUMMARY
         echo "| Model Training | ${{ needs.model-training.result }} |" >> $GITHUB_STEP_SUMMARY
+        echo "| Docker Build & Push | ${{ needs.docker-build-and-push.result }} |" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
         
         if [ "${{ needs.lint-and-format.result }}" = "failure" ] || \
