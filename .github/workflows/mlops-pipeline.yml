@@ -283,7 +283,7 @@ jobs:
         log_message("Top 5 Important Features:")
         for idx, row in feature_importance.head().iterrows():
             log_message(f"  {row['Feature']}: {row['Importance']:.4f}")
-        log_message()
+        log_message("")
         
         joblib.dump(rf_model, 'artifacts/random_forest_model.pkl')
         log_message("Model saved: artifacts/random_forest_model.pkl\n")
