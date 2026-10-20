@@ -525,6 +525,11 @@ CMD ["uvicorn", "src.app:app", "--host", "0.0.0.0"]
 
 **Workflow File:** `.github/workflows/mlops-pipeline.yml`
 
+#### Workflow Screenshot
+> **[ SCREENSHOT ]**
+> Screenshot location: GitHub → Your Repository → Actions tab → Click latest workflow run
+> Show: Workflow name, pipeline stages, job status (all checkmarks), and execution time
+
 #### Pipeline Stages
 
 **Stage 1: Code Quality Checks**
@@ -585,7 +590,17 @@ Summary Report:
   - Deployment ready indicator
 ```
 
-### Deployment Process
+### Deployment Process Screenshots
+
+#### Docker Build Screenshot
+> **[ SCREENSHOT ]**
+> Screenshot location: Docker Hub → Your Repository → Build Details tab
+> Show: Image name, build status, layers, image size, and build time
+
+#### Kubernetes Deployment Screenshot
+> **[ SCREENSHOT ]**
+> Screenshot location: Terminal output from `kubectl get pods -n heart-disease-api`
+> Show: Pod names, status (Running), ready count (2/2), age, and restart count
 
 #### Local Development
 
@@ -619,8 +634,9 @@ git push origin main
 
 # 3. Monitor in GitHub UI
 # Go to: Repository → Actions → Watch workflow
-```
 
+
+```
 #### Docker Hub Setup
 
 **Workflow:** Automatic build on push to main branch
@@ -715,10 +731,10 @@ pytest --cov=src --cov-fail-under=80
 **Repository Setup:**
 
 ```
-Repository URL: https://github.com/YOUR_USERNAME/MLOps_Assignment_01
+Repository URL: https://github.com/vivek-2025ae05214/MLOps_Assignment_01_2025ae05214
 Visibility: Public
 Default Branch: main
-Clone: git clone https://github.com/YOUR_USERNAME/MLOps_Assignment_01.git
+Clone: git clone https://github.com/vivek-2025ae05214/MLOps_Assignment_01_2025ae05214.git
 ```
 
 ### Repository Structure
@@ -726,7 +742,7 @@ Clone: git clone https://github.com/YOUR_USERNAME/MLOps_Assignment_01.git
 **Main Branch Contents:**
 
 ```
-MLOps_Assignment_01/
+MLOps_Assignment_01_2025ae05214/
 ├── src/                      # Application code
 ├── deploy/                   # Deployment configs
 ├── .github/workflows/        # CI/CD pipeline
@@ -893,6 +909,18 @@ kubectl get svc -n heart-disease-api
 # - EKS (Amazon AWS)
 # - AKS (Microsoft Azure)
 ```
+
+### API Documentation Screenshot
+
+> **[ SCREENSHOT ]**
+> Screenshot location: Browser → http://localhost:8000/docs
+> Show: Swagger UI interface with endpoints (/predict, /predict-batch, /health, /metrics) and request/response schemas
+
+### Prometheus Metrics Screenshot
+
+> **[ SCREENSHOT ]**
+> Screenshot location: Browser → http://localhost:8000/metrics
+> Show: Prometheus metrics format with heart_api_* metrics
 
 ### Production Recommendations
 
