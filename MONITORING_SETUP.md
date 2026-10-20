@@ -639,5 +639,5 @@ Choose based on your needs:
 
 ---
 
-**Last Updated**: January 2025  
+**Last Updated**: October 2026  
 **Version**: 1.0.0

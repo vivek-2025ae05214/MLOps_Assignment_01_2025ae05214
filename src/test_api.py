@@ -123,7 +123,7 @@ def test_health() -> bool:
         data = response.json()
         assert "status" in data
         assert data["models_loaded"] in [True, False]
-        logger.info(f"✓ Health check OK: {data['status']}")
+        logger.info(f"Health check OK: {data['status']}")
         return True
     except Exception as e:
         logger.error(f"✗ Health check failed: {e}")
@@ -157,7 +157,7 @@ def test_single_prediction(model: str = "random_forest") -> bool:
         assert "no_disease" in data["probabilities"]
         assert "disease" in data["probabilities"]
         
-        logger.info(f"✓ Prediction successful:")
+        logger.info(f"Prediction successful:")
         logger.info(f"  - Prediction: {data['prediction']} (0=No Disease, 1=Disease)")
         logger.info(f"  - Confidence: {data['confidence']:.4f}")
         logger.info(f"  - Probabilities: {data['probabilities']}")
@@ -193,7 +193,7 @@ def test_batch_prediction(model: str = "random_forest") -> bool:
         assert "total_processed" in data
         assert len(data["predictions"]) == len(TEST_PATIENTS)
         
-        logger.info(f"✓ Batch prediction successful: {data['total_processed']} samples processed")
+        logger.info(f"Batch prediction successful: {data['total_processed']} samples processed")
         
         for idx, (pred, patient) in enumerate(zip(data["predictions"], TEST_PATIENTS)):
             logger.info(f"  [{idx}] {patient['name']}: Pred={pred['prediction']}, Conf={pred['confidence']:.4f}")
@@ -217,12 +217,12 @@ def test_metrics() -> bool:
         
         if response.status_code == 200:
             data = response.json()
-            logger.info(f"✓ Metrics retrieved for {data['model_name']}:")
+            logger.info(f"Metrics retrieved for {data['model_name']}:")
             for metric, value in data.get('metrics', {}).items():
                 logger.info(f"  - {metric}: {value:.4f}")
             return True
         elif response.status_code == 404:
-            logger.warning("✓ Metrics endpoint responding (metrics file not available)")
+            logger.warning("Metrics endpoint responding (metrics file not available)")
             return True
         else:
             logger.error(f"✗ Metrics endpoint failed: {response.status_code}")
@@ -249,7 +249,7 @@ def test_error_handling() -> bool:
         
         # Should return 422 (validation error) or 400
         if response.status_code in [400, 422]:
-            logger.info("✓ Error handling working correctly (invalid input rejected)")
+            logger.info("Error handling working correctly (invalid input rejected)")
             return True
         else:
             logger.warning(f"⚠ Unexpected status code: {response.status_code}")
@@ -268,7 +268,7 @@ def wait_for_api(max_retries: int = 30) -> bool:
         try:
             response = requests.get(f"{BASE_URL}/health", timeout=5)
             if response.status_code == 200:
-                logger.info(f"✓ API ready after {attempt} attempts")
+                logger.info(f"API ready after {attempt} attempts")
                 return True
         except:
             pass
@@ -331,7 +331,7 @@ def run_all_tests() -> None:
     total = len(results)
     
     for test_name, result in results:
-        status = "✓ PASS" if result else "✗ FAIL"
+        status = "PASS" if result else "FAIL"
         logger.info(f"{status}: {test_name}")
     
     logger.info("")
@@ -339,7 +339,7 @@ def run_all_tests() -> None:
     logger.info("")
     
     if passed == total:
-        logger.info("✓ All tests passed!")
+        logger.info("All tests passed!")
     else:
         logger.warning(f"⚠ {total - passed} test(s) failed")
 

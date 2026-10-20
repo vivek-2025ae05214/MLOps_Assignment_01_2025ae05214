@@ -23,7 +23,7 @@ def load_artifacts():
         rf_model = joblib.load(artifacts_dir / 'random_forest_model.pkl')
         scaler = joblib.load(artifacts_dir / 'scaler.pkl')
         
-        print("✓ Successfully loaded trained models and scaler")
+        print("Successfully loaded trained models and scaler")
         return lr_model, rf_model, scaler, artifacts_dir
     
     except FileNotFoundError as e:

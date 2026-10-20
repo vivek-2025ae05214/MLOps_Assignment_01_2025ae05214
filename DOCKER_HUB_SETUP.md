@@ -344,7 +344,7 @@ Use this to make sure you haven't missed anything:
 
 ---
 
-**Last Updated:** January 2025
+**Last Updated:** October 2026
 **Version:** 1.0.0
 
 **You're all set!** From now on, every time you push to `main`, your Docker image will automatically build and upload. No manual work needed. Just commit and push like normal!

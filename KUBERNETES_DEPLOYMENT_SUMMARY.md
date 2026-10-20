@@ -577,5 +577,5 @@ For Kubernetes basics: https://kubernetes.io/docs/
 Your complete Kubernetes infrastructure is ready. Choose your deployment method above and get started!
 
 **Status:** ✅ Ready for Production  
-**Last Updated:** January 2025  
+**Last Updated:** October 2026  
 **Version:** 1.0.0
