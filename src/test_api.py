@@ -13,13 +13,18 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # ============================================================================
-# CONFIGURATION
+# CONFIGURATION - API Test Settings
 # ============================================================================
+# Configure these values based on your deployment environment.
+# BASE_URL: Update to match your API deployment location
+# TIMEOUT: Adjust request timeout based on API response requirements
 
 BASE_URL = "http://localhost:8000"
 TIMEOUT = 10
 
-# Sample patient data for testing
+# Test Patient Sample Data
+# This sample represents a 55-year-old male with specific cardiac symptoms.
+# Use this structure for single prediction requests.
 SAMPLE_PATIENT = {
     "age": 55,
     "sex": 1,
@@ -36,7 +41,12 @@ SAMPLE_PATIENT = {
     "thal": 6
 }
 
-# Test patients (diverse cases)
+# Test Patient Collection - Diverse Clinical Cases
+# Each test case covers different demographic and risk profiles:
+# - Young healthy individual
+# - Middle-aged patient with multiple risk factors
+# - Senior patient with age-related conditions
+# Used for batch prediction testing to validate multi-sample processing.
 TEST_PATIENTS = [
     {
         "name": "Young Healthy Female",
@@ -252,7 +262,7 @@ def test_error_handling() -> bool:
             logger.info("Error handling working correctly (invalid input rejected)")
             return True
         else:
-            logger.warning(f"⚠ Unexpected status code: {response.status_code}")
+            logger.warning(f"Unexpected status code: {response.status_code}")
             return True
             
     except Exception as e:
@@ -341,7 +351,7 @@ def run_all_tests() -> None:
     if passed == total:
         logger.info("All tests passed!")
     else:
-        logger.warning(f"⚠ {total - passed} test(s) failed")
+        logger.warning(f"{total - passed} test(s) failed")
 
 
 if __name__ == "__main__":

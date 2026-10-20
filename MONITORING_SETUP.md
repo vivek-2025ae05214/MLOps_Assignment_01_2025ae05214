@@ -1,16 +1,16 @@
 # Monitoring Setup Guide - Heart Disease Prediction API
 
-## 🎯 Overview
+## Overview
 
 Your API now includes comprehensive monitoring capabilities:
-- ✅ **Request Logging** - All API requests logged to `api_requests.log`
-- ✅ **Prometheus Metrics** - Full metrics for scraping
-- ✅ **Built-in Dashboard** - Simple monitoring without external tools
-- ✅ **Grafana Ready** - Can integrate with Grafana for visualization
+- **Request Logging** - All API requests logged to `api_requests.log`
+- **Prometheus Metrics** - Full metrics for scraping
+- **Built-in Dashboard** - Simple monitoring without external tools
+- **Grafana Ready** - Can integrate with Grafana for visualization
 
 ---
 
-## 📊 Monitoring Architecture
+## Monitoring Architecture
 
 ```
 ┌─────────────────────────────────────────────────────────┐
@@ -50,9 +50,9 @@ Your API now includes comprehensive monitoring capabilities:
 
 ---
 
-## 🚀 Quick Start - 3 Options
+## Quick Start - 3 Options
 
-### Option 1: Simple Monitoring (No External Tools) ⭐ RECOMMENDED
+### Option 1: Simple Monitoring (No External Tools) RECOMMENDED
 
 Access built-in monitoring endpoints:
 
@@ -302,19 +302,19 @@ docker-compose -f docker-compose.monitoring.yml up -d
 
 ---
 
-## 📝 Integrated Logging Features
+## Integrated Logging Features
 
 ### Request Logging Middleware
 
 Every API request is logged with:
-- ✅ Request timestamp
-- ✅ HTTP method (GET, POST, etc.)
-- ✅ Endpoint path
-- ✅ Client IP address
-- ✅ Request ID (for tracking)
-- ✅ Response status code
-- ✅ Request duration (latency)
-- ✅ Error details (if any)
+- Request timestamp
+- HTTP method (GET, POST, etc.)
+- Endpoint path
+- Client IP address
+- Request ID (for tracking)
+- Response status code
+- Request duration (latency)
+- Error details (if any)
 
 **Log File Location:** `api_requests.log`
 
@@ -366,7 +366,7 @@ kubectl logs -n heart-disease-api -l app=heart-disease-api -f
 
 ---
 
-## 📊 Available Metrics
+## Available Metrics
 
 ### Prometheus Metrics (scraped from `/prometheus`)
 
@@ -391,7 +391,7 @@ kubectl logs -n heart-disease-api -l app=heart-disease-api -f
 
 ---
 
-## 🎯 Example Prometheus Queries
+## Example Prometheus Queries
 
 ```promql
 # Requests per second (last 5 minutes)
@@ -469,7 +469,7 @@ groups:
 
 ---
 
-## 📊 Dashboard Examples
+## Dashboard Examples
 
 ### Built-in Dashboard (/dashboard/summary)
 Returns JSON with:
@@ -506,7 +506,7 @@ Title: P95 Latency
 
 ---
 
-## 🔧 Configuration & Customization
+## Configuration & Customization
 
 ### Change Scrape Interval
 
@@ -541,7 +541,7 @@ logging.basicConfig(
 
 ---
 
-## 📈 Performance Tuning
+## Performance Tuning
 
 ### For High Load
 
@@ -567,7 +567,7 @@ volumeMounts:
 
 ---
 
-## ✅ Verification Checklist
+## Verification Checklist
 
 - [ ] API running with `./QUICK_START_LOCAL.sh`
 - [ ] Port forward active: `kubectl port-forward -n heart-disease-api svc/heart-disease-api 8000:80`
@@ -580,7 +580,7 @@ volumeMounts:
 
 ---
 
-## 🎯 Next Steps
+## Next Steps
 
 1. **Start API with logging:**
    ```bash
@@ -622,20 +622,20 @@ volumeMounts:
 
 ---
 
-## ✨ Summary
+## Summary
 
 Your API now has **3-tier monitoring**:
 
-1. ✅ **Built-in** - No dependencies, instant access to logs & dashboard
-2. ✅ **Prometheus** - Metrics scraping & time-series storage
-3. ✅ **Grafana** - Beautiful visualizations & dashboards
+1. **Built-in** - No dependencies, instant access to logs & dashboard
+2. **Prometheus** - Metrics scraping & time-series storage
+3. **Grafana** - Beautiful visualizations & dashboards
 
 Choose based on your needs:
 - **Simple testing**: Use built-in endpoints (`/logs`, `/dashboard/summary`)
 - **Production monitoring**: Deploy Prometheus + Grafana
 - **Quick debugging**: Access `api_requests.log` file
 
-**Status**: ✅ All monitoring features ready!
+**Status**: All monitoring features ready!
 
 ---
 
