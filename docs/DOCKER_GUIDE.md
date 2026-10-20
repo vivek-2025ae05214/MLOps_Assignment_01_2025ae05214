@@ -218,12 +218,12 @@ curl http://localhost:8000/metrics?model=random_forest
 python src/test_api.py
 
 # Expected output:
-# ✓ Root Endpoint OK: 1.0.0
-# ✓ Health check OK: healthy
-# ✓ Prediction successful: Pred=1, Conf=0.8234
-# ✓ Batch prediction successful: 3 samples processed
-# ✓ Metrics retrieved
-# ✓ Error handling working correctly
+# [PASS] Root Endpoint OK: 1.0.0
+# [PASS] Health check OK: healthy
+# [PASS] Prediction successful: Pred=1, Conf=0.8234
+# [PASS] Batch prediction successful: 3 samples processed
+# [PASS] Metrics retrieved
+# [PASS] Error handling working correctly
 # Results: 6/6 tests passed
 ```
 

@@ -694,12 +694,12 @@ kubectl apply -f deploy/kubernetes/
 
 ```python
 # Test Categories:
-✓ API Endpoint Tests (health, predict, predict-batch)
-✓ Input Validation (Pydantic schema)
-✓ Model Inference (both models)
-✓ Error Handling (invalid inputs, missing models)
-✓ Concurrent Requests (load testing)
-✓ Metrics Verification (Prometheus)
+- API Endpoint Tests (health, predict, predict-batch)
+- Input Validation (Pydantic schema)
+- Model Inference (both models)
+- Error Handling (invalid inputs, missing models)
+- Concurrent Requests (load testing)
+- Metrics Verification (Prometheus)
 ```
 
 **Test Execution:**
@@ -855,33 +855,33 @@ git push origin feature/new-endpoint
 
 Local Deployment:
 
-- [x] Docker image builds successfully
-- [x] Container runs without errors
-- [x] Health endpoint responds (200)
-- [x] Prediction endpoint works
-- [x] API documentation accessible (/docs)
+- Docker image builds successfully
+- Container runs without errors
+- Health endpoint responds (200)
+- Prediction endpoint works
+- API documentation accessible (/docs)
 
 Testing:
 
-- [x] All 34 tests pass
-- [x] Coverage exceeds 85%
-- [x] Linting passes (black, flake8, pylint)
-- [x] Format correct (isort)
+- All 34 tests pass
+- Coverage exceeds 85%
+- Linting passes (black, flake8, pylint)
+- Format correct (isort)
 
 Kubernetes:
 
-- [x] All manifests are valid YAML
-- [x] Deployment has 3 replicas
-- [x] LoadBalancer service configured
-- [x] Ingress ready (TLS optional)
-- [x] Health checks configured
+- All manifests are valid YAML
+- Deployment has 3 replicas
+- LoadBalancer service configured
+- Ingress ready (TLS optional)
+- Health checks configured
 
 CI/CD:
 
-- [x] GitHub Actions workflow complete
-- [x] Docker Hub integration working
-- [x] Build artifacts retained
-- [x] Pipeline status visible
+- GitHub Actions workflow complete
+- Docker Hub integration working
+- Build artifacts retained
+- Pipeline status visible
 
 ### Deployment Commands
 
