@@ -13,6 +13,9 @@ ucimlrepo>=0.0.7
 fastapi>=0.95.0
 uvicorn>=0.21.0
 
+# Monitoring & Metrics
+prometheus-client>=0.16.0
+
 # Experiment Tracking
 mlflow>=2.10.0
 
