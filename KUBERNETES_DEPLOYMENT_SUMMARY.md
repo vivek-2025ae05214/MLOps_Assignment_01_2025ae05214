@@ -475,7 +475,7 @@ Choose GKE, EKS, or AKS and follow **DEPLOYMENT_GUIDE.md**
 
 ---
 
-## 📚 Documentation Structure
+## Documentation Structure
 
 ```
 deploy/kubernetes/

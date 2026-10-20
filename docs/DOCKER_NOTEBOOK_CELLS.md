@@ -10,11 +10,11 @@ These are ready-to-use code cells you can add to your Jupyter notebook to demons
 # Task 6: Model Containerization with Docker
 
 ## Objectives
-- ✓ Build a Docker container for model serving API
-- ✓ Create FastAPI application with /predict endpoint
-- ✓ Accept JSON input and return predictions with confidence
-- ✓ Containerize with Dockerfile
-- ✓ Test container locally with sample inputs
+- Build a Docker container for model serving API
+- Create FastAPI application with /predict endpoint
+- Accept JSON input and return predictions with confidence
+- Containerize with Dockerfile
+- Test container locally with sample inputs
 
 ## Key Components
 1. **FastAPI Application** (`src/app.py`) - REST API for model serving

@@ -418,7 +418,7 @@ api_active_requests
 
 ---
 
-## 🚨 Alerts & Health Checks
+## Alerts & Health Checks
 
 ### Health Endpoints
 
@@ -613,7 +613,7 @@ volumeMounts:
 
 ---
 
-## 📚 Resources
+## Resources
 
 - **Prometheus Docs**: https://prometheus.io/docs/
 - **Grafana Docs**: https://grafana.com/docs/grafana/latest/
